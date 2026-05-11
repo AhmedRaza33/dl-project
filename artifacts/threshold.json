@@ -1,0 +1,111 @@
+{
+  "threshold": 2.611133337020874,
+  "feature_order": [
+    "Time",
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "V6",
+    "V7",
+    "V8",
+    "V9",
+    "V10",
+    "V11",
+    "V12",
+    "V13",
+    "V14",
+    "V15",
+    "V16",
+    "V17",
+    "V18",
+    "V19",
+    "V20",
+    "V21",
+    "V22",
+    "V23",
+    "V24",
+    "V25",
+    "V26",
+    "V27",
+    "V28",
+    "Amount"
+  ],
+  "n_features": 30,
+  "selection_strategy": "F2-optimal on validation precision-recall curve (recall weighted 4x precision)",
+  "validation_candidates": {
+    "f1_optimal": {
+      "threshold": 2.878321409225464,
+      "precision": 0.6715328467153284,
+      "recall": 0.7479674796747967,
+      "f1": 0.7076923076918091,
+      "f2": 0.7313195548487537
+    },
+    "f2_optimal": {
+      "threshold": 2.611133337020874,
+      "precision": 0.632996632996633,
+      "recall": 0.7642276422764228,
+      "f1": 0.6924493554322851,
+      "f2": 0.7338017174080522
+    },
+    "recall_at_least_0.90": {
+      "threshold": 0.3185100257396698,
+      "precision": 0.03155650319829424,
+      "recall": 0.9024390243902439,
+      "f1": 0.06098063452815885,
+      "f2": 0.13842124953222606
+    }
+  },
+  "test_metrics": {
+    "production_strategy": "f2_optimal",
+    "ranking": {
+      "roc_auc": 0.9541732625401664,
+      "pr_auc": 0.6713881609693879
+    },
+    "per_strategy": {
+      "f1_optimal": {
+        "label": "F1-optimal",
+        "threshold": 2.878321409225464,
+        "precision": 0.6245954692556634,
+        "recall": 0.7845528455284553,
+        "f1": 0.6954954954954955,
+        "accuracy": 0.99606005501935,
+        "cm": {
+          "TN": 42532,
+          "FP": 116,
+          "FN": 53,
+          "TP": 193
+        }
+      },
+      "f2_optimal": {
+        "label": "F2-optimal (production)",
+        "threshold": 2.611133337020874,
+        "precision": 0.5957446808510638,
+        "recall": 0.7967479674796748,
+        "f1": 0.6817391304347826,
+        "accuracy": 0.9957336690446216,
+        "cm": {
+          "TN": 42515,
+          "FP": 133,
+          "FN": 50,
+          "TP": 196
+        }
+      },
+      "recall_at_least_0.90": {
+        "label": "Recall >= 0.90",
+        "threshold": 0.3185100257396698,
+        "precision": 0.03139717425431711,
+        "recall": 0.8943089430894309,
+        "f1": 0.06066455259892458,
+        "accuracy": 0.8411665967268149,
+        "cm": {
+          "TN": 35861,
+          "FP": 6787,
+          "FN": 26,
+          "TP": 220
+        }
+      }
+    }
+  }
+}

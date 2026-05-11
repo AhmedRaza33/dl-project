@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Credit Card Fraud Detector</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <h1>Credit Card Fraud Detector</h1>
+      <p class="subtitle">Autoencoder-based anomaly detection</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alerts">
+          {% for msg in messages %}
+            <div class="alert alert-error">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Model info -->
+    {% if artifacts_ok %}
+    <section class="card info-card">
+      <div class="info-row">
+        <div><span class="label">Anomaly threshold</span><span class="value">{{ "%.4f"|format(threshold) }}</span></div>
+        <div><span class="label">Input features</span><span class="value">{{ n_features }}</span></div>
+        {% if roc_auc is not none %}
+        <div><span class="label">Test ROC-AUC</span><span class="value">{{ "%.4f"|format(roc_auc) }}</span></div>
+        {% endif %}
+        <div><span class="label">Status</span><span class="value ok">Model loaded</span></div>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Upload -->
+    <section class="card">
+      <h2>Upload transactions</h2>
+      <p class="muted">
+        CSV file with columns:
+        <code>Time, V1 … V28, Amount</code>
+        (the same preprocessed format used to train the model).
+        A <code>Class</code> column is optional and will be ignored.
+      </p>
+
+      <form action="{{ url_for('predict') }}" method="post" enctype="multipart/form-data" class="upload-form">
+        <label for="file" class="filebox">
+          <span class="filebox-icon">CSV</span>
+          <span class="filebox-text">
+            <strong>Choose a CSV file</strong>
+            <small>or drag &amp; drop here</small>
+          </span>
+          <input type="file" id="file" name="file" accept=".csv" required />
+        </label>
+        <div id="file-name" class="file-name muted"></div>
+        <button type="submit" class="btn-primary">Detect fraud</button>
+      </form>
+    </section>
+
+    <!-- Results -->
+    {% if result %}
+    <section class="card">
+      <h2>Results <small class="muted">— {{ result.filename }}</small></h2>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Total transactions</div>
+          <div class="stat-value">{{ result.total }}</div>
+        </div>
+        <div class="stat stat-ok">
+          <div class="stat-label">Normal</div>
+          <div class="stat-value">{{ result.normal }}</div>
+        </div>
+        <div class="stat {% if result.fraud > 0 %}stat-bad{% endif %}">
+          <div class="stat-label">Flagged as fraud</div>
+          <div class="stat-value">{{ result.fraud }} <span class="stat-sub">({{ "%.2f"|format(result.fraud_pct) }}%)</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Mean error</div>
+          <div class="stat-value">{{ "%.4f"|format(result.mean_error) }}</div>
+        </div>
+      </div>
+
+      <h3>Top {{ result.preview_n }} transactions (highest reconstruction error first)</h3>
+      <div class="table-wrap">
+        <table class="results">
+          <thead>
+            <tr>
+              {% for col in result.columns %}
+              <th>{{ col }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in result.rows %}
+            <tr class="{% if row[-1] == 'Fraud' %}row-fraud{% endif %}">
+              {% for cell in row %}
+                {% if loop.last %}
+                  <td><span class="badge {% if cell == 'Fraud' %}badge-fraud{% else %}badge-normal{% endif %}">{{ cell }}</span></td>
+                {% elif cell is number %}
+                  <td>{{ "%.4f"|format(cell) }}</td>
+                {% else %}
+                  <td>{{ cell }}</td>
+                {% endif %}
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if result.truncated %}
+        <p class="muted small">Showing first {{ result.preview_n }} of {{ result.total }} rows (sorted by reconstruction error).</p>
+      {% endif %}
+    </section>
+    {% endif %}
+  </main>
+
+  <footer class="footer">
+    <div class="container muted small">
+      University Deep Learning project — Autoencoder anomaly detection.
+    </div>
+  </footer>
+
+  <script>
+    // Show the chosen file name next to the upload box.
+    const fileInput  = document.getElementById('file');
+    const fileNameEl = document.getElementById('file-name');
+    if (fileInput) {
+      fileInput.addEventListener('change', () => {
+        fileNameEl.textContent = fileInput.files.length ? 'Selected: ' + fileInput.files[0].name : '';
+      });
+    }
+  </script>
+</body>
+</html>
