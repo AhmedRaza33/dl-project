@@ -7,3 +7,5 @@ matplotlib>=3.7
 nbformat>=5.9
 nbconvert>=7.0
 ipykernel>=6.0
+reportlab>=4.0
+python-pptx>=1.0

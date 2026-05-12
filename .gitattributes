@@ -1,0 +1,10 @@
+* text=auto eol=lf
+
+# Binary files — never touch their bytes
+*.pdf  binary
+*.pptx binary
+*.keras binary
+*.h5    binary
+*.npy   binary
+*.png   binary
+*.jpg   binary

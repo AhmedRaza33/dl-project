@@ -12,15 +12,21 @@
 | **MLP (supervised, best variant)** | **0.902** | 0.743 | **0.815** | **0.979** | **0.833** |
 | Autoencoder (unsupervised, retrained on shared split) | 0.329 | 0.716 | 0.451 | 0.938 | 0.492 |
 
-See [`REPORT.md`](REPORT.md) for the full write-up and
-[`PRESENTATION.md`](PRESENTATION.md) for the slide outline.
+### Deliverables
+
+- **[`Final_Report.pdf`](Final_Report.pdf)** — formatted PDF report (7 pages, with embedded figures).
+- **[`Final_Presentation.pptx`](Final_Presentation.pptx)** — 12-slide deck for the project presentation.
+- [`REPORT.md`](REPORT.md) / [`PRESENTATION.md`](PRESENTATION.md) — the same content as Markdown sources.
+- [`fraud_detection_mlp.ipynb`](fraud_detection_mlp.ipynb) — executed analysis notebook.
 
 ## Repository layout
 
 ```
 DL Project/
-├── REPORT.md                              Final report (deliverable B)
-├── PRESENTATION.md                        Slide outline (deliverable C)
+├── Final_Report.pdf                       Polished PDF report (deliverable B)
+├── Final_Presentation.pptx                12-slide PPTX deck (deliverable C)
+├── REPORT.md                              Markdown source of the report
+├── PRESENTATION.md                        Markdown source of the slides
 ├── README.md
 ├── requirements.txt
 ├── app.py                                 Flask UI for the autoencoder
@@ -33,7 +39,9 @@ DL Project/
 │   ├── retrain_ae_shared_split.py         AE retrained on the MLP's train normals
 │   ├── compare_models.py                  Head-to-head on shared test set
 │   ├── ablation_study.py                  Subtractive ablation
-│   └── build_notebook.py                  Regenerates the MLP notebook
+│   ├── build_notebook.py                  Regenerates the MLP notebook
+│   ├── build_report_pdf.py                Generates Final_Report.pdf
+│   └── build_presentation_pptx.py         Generates Final_Presentation.pptx
 └── artifacts/
     ├── autoencoder_fraud.keras            Original AE model
     ├── threshold.json                     Original AE threshold + metadata
@@ -91,7 +99,11 @@ python experiments/build_notebook.py
 python -m nbconvert --to notebook --execute fraud_detection_mlp.ipynb \
     --output fraud_detection_mlp.ipynb
 
-# 7. Run the inference UI
+# 7. Rebuild the PDF report and the PPTX presentation from the artifacts
+python experiments/build_report_pdf.py
+python experiments/build_presentation_pptx.py
+
+# 8. Run the inference UI
 python app.py    # then open http://127.0.0.1:5000
 ```
 

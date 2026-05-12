@@ -51,6 +51,7 @@ desktop.ini
 *.log
 *.tmp
 logs/
+.commit_msg.txt
 
 # Per-variant keras checkpoints (regeneratable via experiments/train_mlp_study.py)
 artifacts/mlp_study/mlp_1_baseline.keras
