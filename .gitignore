@@ -52,6 +52,17 @@ desktop.ini
 *.tmp
 logs/
 
+# Per-variant keras checkpoints (regeneratable via experiments/train_mlp_study.py)
+artifacts/mlp_study/mlp_1_baseline.keras
+artifacts/mlp_study/mlp_2_adam.keras
+artifacts/mlp_study/mlp_3_classweights.keras
+artifacts/mlp_study/mlp_4_batchnorm.keras
+artifacts/mlp_study/mlp_5_dropout_l2.keras
+artifacts/mlp_study/mlp_6_leakyrelu.keras
+artifacts/mlp_study/mlp_7_best.keras
+artifacts/mlp_study/mlp_full_stack.keras
+artifacts/mlp_study/mlp_ablate_*.keras
+
 # Flask
 instance/
 .webassets-cache

@@ -1,0 +1,8 @@
+variant,description,params,epochs,train_time_sec,val_threshold,test_precision,test_recall,test_f1,test_roc_auc,test_pr_auc
+1_baseline,"Plain MLP, SGD, ReLU, no tricks",4609,30,9.92,0.486209,0.8056,0.7838,0.7945,0.9593,0.6998
+2_adam,Swap SGD -> Adam,4609,25,7.89,0.678954,0.9016,0.7432,0.8148,0.9791,0.8329
+3_classweights,Adam + inverse-frequency class weights,4609,10,4.17,0.995486,0.7143,0.8108,0.7595,0.975,0.6552
+4_batchnorm,+ BatchNormalization after each hidden layer,5057,7,4.75,0.991813,0.7778,0.7568,0.7671,0.9651,0.6448
+5_dropout_l2,+ Dropout(0.3) + L2(1e-4) regularisation,5057,19,11.16,0.999378,0.7945,0.7838,0.7891,0.9577,0.6671
+6_leakyrelu,Swap ReLU -> LeakyReLU(0.1),5057,17,10.67,0.999643,0.7808,0.7703,0.7755,0.9615,0.66
+7_best,Best config: He init + LR scheduler on top of everything,5057,28,16.23,0.998872,0.8056,0.7838,0.7945,0.9701,0.6658

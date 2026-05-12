@@ -1,75 +1,104 @@
-# Credit Card Fraud Detection — Autoencoder (Deep Learning Project)
+# Credit Card Fraud Detection — Deep Learning Study
 
-An end-to-end deep-learning pipeline that detects fraudulent credit-card
-transactions using an **unsupervised autoencoder**. The repo ships with the
-data-preprocessing notebook, the model-training notebook, the trained model
-artifacts, and a Flask web app for interactive inference.
+> CS-419 Deep Learning final project. An experimental comparison of an
+> **unsupervised deep autoencoder** and a **supervised MLP classifier**
+> on the Kaggle Credit Card Fraud Detection dataset, with a Flask
+> inference UI.
 
-## Project structure
+**Headline result (same 42 722-sample test set, same threshold-selection rule):**
+
+| Model | Precision | Recall | F1 | ROC-AUC | PR-AUC |
+|---|---:|---:|---:|---:|---:|
+| **MLP (supervised, best variant)** | **0.902** | 0.743 | **0.815** | **0.979** | **0.833** |
+| Autoencoder (unsupervised, retrained on shared split) | 0.329 | 0.716 | 0.451 | 0.938 | 0.492 |
+
+See [`REPORT.md`](REPORT.md) for the full write-up and
+[`PRESENTATION.md`](PRESENTATION.md) for the slide outline.
+
+## Repository layout
 
 ```
 DL Project/
-├── app.py                                # Flask web app (inference UI)
-├── requirements.txt                      # Python dependencies
-├── fraud_detection_preprocessing.ipynb   # EDA + preprocessing notebook
-├── fraud_detection_autoencoder.ipynb     # Autoencoder training notebook
-├── sample_test.csv                       # Small sample for trying the app
-├── artifacts/                            # Trained model + thresholds
-│   ├── autoencoder_fraud.keras
-│   ├── autoencoder_fraud.h5
-│   ├── history.json
-│   └── threshold.json
-├── templates/index.html                  # Flask UI template
-└── static/style.css                      # Stylesheet
+├── REPORT.md                              Final report (deliverable B)
+├── PRESENTATION.md                        Slide outline (deliverable C)
+├── README.md
+├── requirements.txt
+├── app.py                                 Flask UI for the autoencoder
+├── fraud_detection_preprocessing.ipynb    EDA + scaling -> processed_creditcard.csv
+├── fraud_detection_autoencoder.ipynb      Unsupervised AE pipeline
+├── fraud_detection_mlp.ipynb              Supervised MLP study + comparison
+├── experiments/                           CLI versions of the analyses
+│   ├── common.py                          shared splits + metric helpers
+│   ├── train_mlp_study.py                 7-variant additive sweep
+│   ├── retrain_ae_shared_split.py         AE retrained on the MLP's train normals
+│   ├── compare_models.py                  Head-to-head on shared test set
+│   ├── ablation_study.py                  Subtractive ablation
+│   └── build_notebook.py                  Regenerates the MLP notebook
+└── artifacts/
+    ├── autoencoder_fraud.keras            Original AE model
+    ├── threshold.json                     Original AE threshold + metadata
+    ├── mlp_study/                         all MLP variants, ablation, retrained AE
+    └── comparison/                        head-to-head plots and metrics
 ```
 
 > The full preprocessed dataset (`processed_creditcard.csv`, ~158 MB) is
-> excluded from version control via `.gitignore` because it exceeds GitHub's
-> 100 MB per-file limit. Regenerate it by running
-> `fraud_detection_preprocessing.ipynb` on the original
+> excluded from version control because it exceeds GitHub's 100 MB
+> per-file limit. Regenerate it by running
+> `fraud_detection_preprocessing.ipynb` on the
 > [Kaggle Credit Card Fraud dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud).
 
 ## How it works
 
-1. **Preprocessing** — `fraud_detection_preprocessing.ipynb` scales features,
-   handles class imbalance, and saves a clean dataset.
-2. **Training** — `fraud_detection_autoencoder.ipynb` trains an autoencoder
-   only on legitimate transactions. Reconstruction error is used as the
-   anomaly score; a threshold is chosen from the validation set and stored in
-   `artifacts/threshold.json`.
-3. **Inference** — `app.py` loads the saved model and threshold and serves a
-   small Flask UI that predicts whether a transaction is fraudulent.
+1. **Preprocessing** (`fraud_detection_preprocessing.ipynb`) — scales
+   `Time` and `Amount`, persists the cleaned dataset.
+2. **Autoencoder** (`fraud_detection_autoencoder.ipynb`) — symmetric
+   30→28→20→12→**7**→12→20→28→30 AE trained on legitimate transactions
+   only; reconstruction error becomes the anomaly score.
+3. **MLP study** (`fraud_detection_mlp.ipynb` + `experiments/`) —
+   supervised binary classifier with an additive sweep across
+   optimisers, activations, weight init, BatchNorm, Dropout, L2, and
+   class weighting, plus a subtractive ablation and a head-to-head
+   comparison against the autoencoder on the same test set.
+4. **Inference UI** (`app.py`) — Flask app that serves the autoencoder
+   behind a small web form.
 
-## Getting started
+## Reproducing the experiments
 
 ```bash
-# 1. Clone
-git clone https://github.com/AhmedRaza33/dl-project.git
-cd dl-project
-
-# 2. Install dependencies
+# 0. Environment
 pip install -r requirements.txt
 
-# 3. Run the web app
-python app.py
+# 1. Regenerate the preprocessed dataset (only if missing — 158 MB)
+python -m nbconvert --to notebook --execute fraud_detection_preprocessing.ipynb \
+    --output fraud_detection_preprocessing.ipynb
+
+# 2. Train the unsupervised autoencoder (its own pipeline)
+python -m nbconvert --to notebook --execute fraud_detection_autoencoder.ipynb \
+    --output fraud_detection_autoencoder.ipynb
+
+# 3. Run the MLP study end-to-end (7 variants -> ~75 seconds on CPU)
+python experiments/train_mlp_study.py
+
+# 4. Retrain the AE on the *same* train split and compare head-to-head
+python experiments/retrain_ae_shared_split.py
+python experiments/compare_models.py
+
+# 5. Subtractive ablation on the full-stack MLP
+python experiments/ablation_study.py
+
+# 6. Refresh the executed MLP notebook with the latest numbers
+python experiments/build_notebook.py
+python -m nbconvert --to notebook --execute fraud_detection_mlp.ipynb \
+    --output fraud_detection_mlp.ipynb
+
+# 7. Run the inference UI
+python app.py    # then open http://127.0.0.1:5000
 ```
-
-Then open <http://127.0.0.1:5000> in your browser and upload `sample_test.csv`
-to try it out.
-
-## Re-training from scratch
-
-1. Download `creditcard.csv` from the Kaggle dataset linked above.
-2. Run `fraud_detection_preprocessing.ipynb` end-to-end to produce
-   `processed_creditcard.csv`.
-3. Run `fraud_detection_autoencoder.ipynb` end-to-end to retrain the model
-   and refresh the artifacts in `artifacts/`.
 
 ## Tech stack
 
-- Python 3.10+
-- TensorFlow / Keras
-- scikit-learn, pandas, numpy
+- Python 3.10+, TensorFlow / Keras
+- scikit-learn, pandas, numpy, matplotlib
 - Flask (for the inference UI)
 
 ## Author
