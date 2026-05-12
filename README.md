@@ -10,7 +10,10 @@
 | Model | Precision | Recall | F1 | ROC-AUC | PR-AUC |
 |---|---:|---:|---:|---:|---:|
 | **MLP (supervised, best variant)** | **0.902** | 0.743 | **0.815** | **0.979** | **0.833** |
-| Autoencoder (unsupervised, retrained on shared split) | 0.329 | 0.716 | 0.451 | 0.938 | 0.492 |
+| Autoencoder (unsupervised) | 0.413 | 0.676 | 0.513 | 0.940 | 0.468 |
+
+Both models are trained and evaluated on the **same stratified 70/15/15 split**
+defined in `experiments/common.py`, so the comparison is genuinely apples-to-apples.
 
 ### Deliverables
 
@@ -34,9 +37,8 @@ DL Project/
 ├── fraud_detection_autoencoder.ipynb      Unsupervised AE pipeline
 ├── fraud_detection_mlp.ipynb              Supervised MLP study + comparison
 ├── experiments/                           CLI versions of the analyses
-│   ├── common.py                          shared splits + metric helpers
+│   ├── common.py                          shared splits + metric helpers (consumed by both notebooks)
 │   ├── train_mlp_study.py                 7-variant additive sweep
-│   ├── retrain_ae_shared_split.py         AE retrained on the MLP's train normals
 │   ├── compare_models.py                  Head-to-head on shared test set
 │   ├── ablation_study.py                  Subtractive ablation
 │   ├── build_notebook.py                  Regenerates the MLP notebook
@@ -87,8 +89,7 @@ python -m nbconvert --to notebook --execute fraud_detection_autoencoder.ipynb \
 # 3. Run the MLP study end-to-end (7 variants -> ~75 seconds on CPU)
 python experiments/train_mlp_study.py
 
-# 4. Retrain the AE on the *same* train split and compare head-to-head
-python experiments/retrain_ae_shared_split.py
+# 4. Compare the autoencoder and the best MLP head-to-head on the shared test set
 python experiments/compare_models.py
 
 # 5. Subtractive ablation on the full-stack MLP

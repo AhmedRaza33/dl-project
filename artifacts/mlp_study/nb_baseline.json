@@ -20,7 +20,7 @@
     "description": "Baseline MLP (SGD, ReLU, no tricks)"
   },
   "n_params": 4609,
-  "train_time_sec": 8.858529567718506,
+  "train_time_sec": 9.841178178787231,
   "epochs_run": 30,
   "val": {
     "threshold": 0.4862089157104492,

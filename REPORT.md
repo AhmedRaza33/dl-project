@@ -82,10 +82,12 @@ Two model families are studied:
    *normals only* to minimise reconstruction MSE. At inference time,
    high reconstruction error = anomaly = fraud. ~4 k parameters.
 
-For a fair head-to-head we retrain the autoencoder on **exactly the same
-training-set normals** used by the MLP (see
-`experiments/retrain_ae_shared_split.py`), and pick its threshold the
-same way: argmax-F1 on the shared validation set.
+Both notebooks now use the **same stratified 70 / 15 / 15 split** defined
+in `experiments/common.py`. The autoencoder still trains on the *normals
+only* (its original unsupervised paradigm), but those normals are drawn
+from the same training partition the MLP uses. The two models therefore
+make their final predictions on byte-identical validation and test sets,
+and the comparison is genuinely apples-to-apples.
 
 ### Why these models?
 
@@ -176,8 +178,8 @@ F1-optimal threshold-selection rule on the same validation set.
 
 | Model | Params | Train time | Inference (ms/1k) | Precision | Recall | F1 | ROC-AUC | PR-AUC |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| **MLP (best)**     | 4 609 |  7.9 s | 1.48 | **0.902** | 0.743 | **0.815** | **0.979** | **0.833** |
-| Autoencoder        | 4 085 | 46.1 s | 2.03 | 0.329 | 0.716 | 0.451 | 0.938 | 0.492 |
+| **MLP (best)**     | 4 609 |  7.9 s | 1.44 | **0.902** | 0.743 | **0.815** | **0.979** | **0.833** |
+| Autoencoder        | 4 085 | 96.8 s | 1.92 | 0.413 | 0.676 | 0.513 | 0.940 | 0.468 |
 
 The MLP wins decisively across **every** metric. The autoencoder still
 ranks frauds reasonably well (ROC-AUC 0.94) but its precision is poor:
@@ -273,8 +275,8 @@ weights are restored to the best epoch.
 
 | Model | Params | Training time | Inference latency |
 |---|---:|---:|---:|
-| MLP (best)     | 4 609 |  7.9 s | 1.48 ms / 1 000 samples |
-| Autoencoder    | 4 085 | 46.1 s | 2.03 ms / 1 000 samples |
+| MLP (best)     | 4 609 |  7.9 s | 1.44 ms / 1 000 samples |
+| Autoencoder    | 4 085 | 96.8 s | 1.92 ms / 1 000 samples |
 
 The MLP is 6× faster to train (fewer epochs needed to converge) and
 slightly faster at inference. Both fit comfortably on commodity CPU.
@@ -310,8 +312,8 @@ For this dataset, ranked by impact:
 
 **Cross-model:**
 
-- The **supervised MLP beats the unsupervised autoencoder by ~0.36 F1
-  and ~0.34 PR-AUC** on the same test set. The autoencoder retains a
+- The **supervised MLP beats the unsupervised autoencoder by ~0.30 F1
+  and ~0.36 PR-AUC** on the same test set. The autoencoder retains a
   role as a drift sensor and as a fallback for novel fraud patterns
   unseen in the labels — but as the primary classifier the MLP is
   strictly better.
@@ -418,7 +420,6 @@ jupyter nbconvert --to notebook --execute fraud_detection_autoencoder.ipynb
 # 4. Run the supervised MLP study end-to-end (also produces the head-to-head
 #    comparison artifacts and the ablation).
 python experiments/train_mlp_study.py
-python experiments/retrain_ae_shared_split.py
 python experiments/compare_models.py
 python experiments/ablation_study.py
 
@@ -440,15 +441,17 @@ DL Project/
 ├── fraud_detection_autoencoder.ipynb      Unsupervised AE pipeline
 ├── fraud_detection_mlp.ipynb              Supervised MLP study + comparison (this report's main notebook)
 ├── experiments/
-│   ├── common.py                          Shared splits + metric helpers
+│   ├── common.py                          Shared splits + metric helpers (consumed by both notebooks)
 │   ├── train_mlp_study.py                 7-variant additive sweep
-│   ├── retrain_ae_shared_split.py         AE retrained on the MLP's training-set normals
 │   ├── compare_models.py                  Head-to-head on shared test set
 │   ├── ablation_study.py                  Subtractive ablation
-│   └── build_notebook.py                  Regenerates fraud_detection_mlp.ipynb
+│   ├── build_notebook.py                  Regenerates fraud_detection_mlp.ipynb
+│   ├── build_report_pdf.py                Regenerates Final_Report.pdf
+│   └── build_presentation_pptx.py         Regenerates Final_Presentation.pptx
 └── artifacts/
-    ├── autoencoder_fraud.keras            Original AE (different split)
-    ├── threshold.json                     Original AE threshold + metadata
-    ├── mlp_study/                         All MLP variants, ablation, retrained AE
+    ├── autoencoder_fraud.keras            Canonical AE (trained by the notebook on the shared split)
+    ├── threshold.json                     AE threshold + metadata
+    ├── history.json                       AE training history + time
+    ├── mlp_study/                         All MLP variants + ablation
     └── comparison/                        Head-to-head plots and metrics
 ```

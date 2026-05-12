@@ -32,8 +32,7 @@ from common import (
 )
 
 
-AE_MODEL_PATH = MLP_DIR / "ae_shared.keras"   # retrained on the MLP's training split
-AE_JSON_PATH  = MLP_DIR / "ae_shared.json"
+AE_MODEL_PATH  = ARTIFACTS_DIR / "autoencoder_fraud.keras"   # canonical AE (trained by the notebook on the shared split)
 MLP_MODEL_PATH = MLP_DIR / "mlp_best.keras"
 MLP_BEST_JSON  = MLP_DIR / "7_best.json"
 
@@ -120,9 +119,9 @@ def main():
     mlp_scores = mlp.predict(X_test, batch_size=8192, verbose=0).ravel()
     mlp_infer = (time.time() - t0) * 1000 * 1000 / len(X_test)  # ms per 1k samples
 
-    # ---------- Autoencoder (retrained on the SAME train-split normals) ----------
+    # ---------- Autoencoder (trained by fraud_detection_autoencoder.ipynb on the SAME shared split) ----------
     ae = load_model(AE_MODEL_PATH, compile=False)
-    ae_rec = json.loads(AE_JSON_PATH.read_text())
+    ae_params = int(ae.count_params())
     X_val_hat  = ae.predict(X_val,  batch_size=8192, verbose=0)
     ae_val_scores  = np.mean((X_val  - X_val_hat ) ** 2, axis=1)
     t0 = time.time()
@@ -136,6 +135,19 @@ def main():
     ae_val_metrics  = evaluate_scores(y_val, ae_val_scores,  threshold=None)
     mlp_metrics = evaluate_scores(y_test, mlp_scores, threshold=mlp_val_metrics["threshold"])
     ae_metrics  = evaluate_scores(y_test, ae_scores,  threshold=ae_val_metrics["threshold"])
+
+    # The AE notebook doesn't persist a structured training-time JSON like the
+    # MLP study, so we capture what we need on the fly. Training time is taken
+    # from the notebook's recorded history if available.
+    ae_train_time = float("nan")
+    history_path = ARTIFACTS_DIR / "history.json"
+    if history_path.exists():
+        try:
+            hist = json.loads(history_path.read_text())
+            ae_train_time = float(hist.get("train_time_sec", float("nan")))
+        except Exception:
+            pass
+    ae_rec = {"n_params": ae_params, "train_time_sec": ae_train_time}
 
     # ---------- Save raw scores so the notebook can reproduce charts ----------
     np.save(COMPARE_DIR / "mlp_scores.npy", mlp_scores)

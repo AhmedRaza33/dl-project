@@ -30,7 +30,7 @@ out into spoken sentences during practice.
 - 284 807 European card transactions, September 2013.
 - 30 features: `Time`, `V1..V28` (PCA-decorrelated), `Amount`.
 - 492 frauds (0.172 %).
-- Stratified 70 / 15 / 15 split with seed 42 — reused everywhere.
+- Stratified 70 / 15 / 15 split with seed 42 — reused by **both** notebooks.
 - Visual: bar chart of class counts (log scale).
 
 ## Slide 4 — Model A: Deep autoencoder (unsupervised)
@@ -88,13 +88,13 @@ out into spoken sentences during practice.
 
 | Metric | MLP | Autoencoder |
 |---|---:|---:|
-| Precision | **0.902** | 0.329 |
-| Recall    | 0.743 | 0.716 |
-| F1        | **0.815** | 0.451 |
-| ROC-AUC   | **0.979** | 0.938 |
-| PR-AUC    | **0.833** | 0.492 |
+| Precision | **0.902** | 0.413 |
+| Recall    | 0.743 | 0.676 |
+| F1        | **0.815** | 0.513 |
+| ROC-AUC   | **0.979** | 0.940 |
+| PR-AUC    | **0.833** | 0.468 |
 | Params    | 4 609 | 4 085 |
-| Train time | 7.9 s | 46.1 s |
+| Train time | 7.9 s | 96.8 s |
 
 - Visual: side-by-side confusion matrices.
 
@@ -116,8 +116,9 @@ out into spoken sentences during practice.
     thresholds for every variant.
   - 74 fraud cases in test set → high variance in confusion matrix.
 - Making the comparison **fair**: realised partway through that the
-  original AE was trained on a different normals split, so we retrained
-  the AE on the same split as the MLP before comparing.
+  original AE notebook used a different split than the MLP notebook, so
+  we unified both notebooks to use the **same** stratified 70/15/15 split
+  defined in `experiments/common.py`.
 
 ## Slide 12 — What I would improve with more time
 
